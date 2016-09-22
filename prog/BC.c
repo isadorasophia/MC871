@@ -13,7 +13,10 @@ int main (int argc, char *argv[]) {
     MedicalImage* model;
     MedicalImage* label;
     GrayImage*    img;
-    ColorImage*        color_img;
+    ColorImage*   color_img;
+
+    /* Flag to use label or not */
+    int use_label = 1;
 
     int x, y, cord;
     int B, C;
@@ -25,8 +28,15 @@ int main (int argc, char *argv[]) {
         usage();
     }
 
+    if (strcasecmp("NONE", argv[2]) == 0) {
+        use_label = 0;
+    }
+
     model = ReadMedicalImage(argv[1]);
-    label = ReadMedicalImage(argv[2]);
+
+    if (use_label) {
+        label = ReadMedicalImage(argv[2]);
+    }
 
     /* Make sure both images fit each other */
     if (model->nx != label->nx || model->ny != label->ny ||
@@ -71,30 +81,43 @@ int main (int argc, char *argv[]) {
     img = CreateGrayImage(y, x);
     color_img = CreateColorImage(y, x);
 
-    /* get label model */
-    to2d_cut(label, &img, cut, cord);
+    if (use_label) {
+        /* get label model */
+        to2d_cut(label, &img, cut, cord);
 
-    if (color(img, color_img) == OK) {
-        /* get cut from original model */
+        if (color(img, color_img) == OK) {
+            /* get cut from original model */
+            to2d_cut(model, &img, cut, cord);
+
+            /* convert colorspace from model to H */
+            scale_colorspace(img, NONE, H);
+
+            BC(img, B, C);
+
+            /* apply mask! */
+            apply_mask(img, color_img);
+
+            /* Write output */
+            WriteColorImage(color_img, argv[3]);
+        } else {
+            printf("Incorrect usage!\n");
+        }
+
+        /* free memory */
+        DestroyMedicalImage(&label);
+    } else {
+        /* simply apply brightness and constrast + cut */
+        /* first, get model to plane */
         to2d_cut(model, &img, cut, cord);
-
-        /* convert colorspace from model to H */
-        scale_colorspace(img, NONE, H);
 
         BC(img, B, C);
 
-        /* apply mask! */
-        apply_mask(img, color_img);
-
         /* Write output */
-        WriteColorImage(color_img, argv[3]);
-    } else {
-        printf("Incorrect usage!\n");
+        WriteGrayImage(img, argv[3]);
     }
 
     /* Clean up the mess! */
     DestroyMedicalImage(&model);
-    DestroyMedicalImage(&label);
     DestroyGrayImage(&img);
     DestroyColorImage(&color_img);
 

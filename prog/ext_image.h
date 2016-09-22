@@ -15,7 +15,7 @@ typedef enum { AXIAL = 1, CORONAL, SAGITAL } Cut;
 #define CLAMP_NEG(p) (p < 0 ? 0 : p)
 #define CLAMP_PERC(p) (p > 0.999 ? 0.999 : p)
 
-#define MAX(p, q) (p > q ? p : q)
+// #define MAX(p, q) (p > q ? p : q)
 
 #define ERROR -1
 #define NONE  -1
@@ -127,7 +127,7 @@ int to2d(MedicalImage* model, GrayImage** img, Axis a, Orientation o,
 
     return OK;
 }
-
+ 
 /* Altera o brilho e contraste da imagem, dado a porcentagem (0 a 100%) 
  *    p: porcentagem de brilho e contraste (0 a 1)
  * */
@@ -139,8 +139,8 @@ int BC(GrayImage* img, int B, int C) {
         k1 = 0,
         I1, I2;
 
-    float B_ = B * 0.01 * H,
-          C_ = C * 0.01 * H;
+    float B_ = (100 - B) * 0.01 * H,
+          C_ = (100 - C) * 0.01 * H;
 
     I2 = CLAMP_COLOR((2 * B_ + C_)/2);
     I1 = CLAMP_COLOR((2 * B_ - C_)/2);
@@ -232,47 +232,47 @@ int color(GrayImage* img, ColorImage* c_img) {
     return OK;
 }
 
-void apply_mask(GrayImage* img, ColorImage* c_img) {
-    int y = img->ny;
-    int x = img->nx;
-
-    int i, j;
-    float Cg, Co, Y;
-
-    for (i = 0; i < y; i++) {
-        for (j = 0; j < x; j++) {
-            rgb2ycc(c_img->cor[i][j], &Y, &Cg, &Co);
-
-            float lum = (float)img->val[i][j]/H;
-
-            Y   = lum;
-
-            Cg *= lum;
-            Co *= lum;
-
-            ycc2rgb(Y, Cg, Co, &(c_img->cor[i][j]));
-        }
-    }
-}
-
 /* Convert from a rgb space to YCgCo */
-void rgb2ycc(Cor cor, float* Y, float* Cg, float* Co) {
+void rgb2ycc(Cor cor, float* Y_, float* Cg, float* Co) {
     float R_ = (float)cor.val[R]/H,
           G_ = (float)cor.val[G]/H,
           B_ = (float)cor.val[B]/H; 
 
-    *Y  =  0.25 * R_ + 0.5 * G_ + 0.25 * B_;
+    *Y_ =  0.25 * R_ + 0.5 * G_ + 0.25 * B_;
     *Cg = -0.25 * R_ + 0.5 * G_ - 0.25 * B_;
     *Co =  0.5  * R_            - 0.5  * B_;
 }
 
 /* Convert from a YCgCo space to a rgb space */
-void ycc2rgb(float Y, float Cg, float Co, Cor* cor) {
-    float R_ = Y - Cg + Co,
-          G_ = Y + Cg,
-          B_ = Y - Cg - Co;
+void ycc2rgb(float Y_, float Cg, float Co, Cor* cor) {
+    float R_ = Y_ - Cg + Co,
+          G_ = Y_ + Cg,
+          B_ = Y_ - Cg - Co;
 
     cor->val[R] = CLAMP_COLOR(R_ * H);
     cor->val[G] = CLAMP_COLOR(G_ * H);
     cor->val[B] = CLAMP_COLOR(B_ * H);
+}
+
+void apply_mask(GrayImage* img, ColorImage* c_img) {
+    int y = img->ny;
+    int x = img->nx;
+
+    int i, j;
+    float Cg, Co, Y_;
+
+    for (i = 0; i < y; i++) {
+        for (j = 0; j < x; j++) {
+            rgb2ycc(c_img->cor[i][j], &Y_, &Cg, &Co);
+
+            float lum = (float)img->val[i][j]/H;
+
+            Y_  = lum;
+
+            Cg *= lum;
+            Co *= lum;
+
+            ycc2rgb(Y_, Cg, Co, &(c_img->cor[i][j]));
+        }
+    }
 }
