@@ -6,11 +6,11 @@ import os
 
 import subprocess
 
-exe         = "/home/bonnibel/graduation/6thsemester/mo815/libmc920_2.0/prog/BC"
-model_name  = "/home/bonnibel/graduation/6thsemester/mo815/libmc920_2.0/data/brain.scn"
-labels_name = "/home/bonnibel/graduation/6thsemester/mo815/libmc920_2.0/data/brain_labels.scn"
+exe         = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/BC"
+model_name  = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/brain.scn"
+labels_name = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/brain_labels.scn"
 
-output    = "/home/bonnibel/graduation/6thsemester/mo815/libmc920_2.0/prog/brain.ppm"
+output    = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/brain.ppm"
 
 def change():
     try:
@@ -59,13 +59,13 @@ for t, mode in CUTS:
 l2 = Label(root, text="Brightness:", width = 8)
 l2.grid(row = 2, column = 0, padx = 4, pady = 23)
 w1 = Scale(root, from_=0, to=100, orient=HORIZONTAL)
-w1.set(10)
+w1.set(60)
 w1.grid(row = 2, column = 1, columnspan = 2, padx = 10, pady = 5, sticky = W+E+N+S)
 
 l2 = Label(root, text="Contrast:", width = 8)
 l2.grid(row = 3, column = 0, padx = 4, pady = 18)
 w2 = Scale(root, from_=0, to=100, orient=HORIZONTAL)
-w2.set(40)
+w2.set(30)
 w2.grid(row = 3, column = 1, columnspan = 2, padx = 10, sticky = W+E+N+S)
 
 # set main button

@@ -140,7 +140,7 @@ int BC(GrayImage* img, int B, int C) {
         I1, I2;
 
     float B_ = (100 - B) * 0.01 * H,
-          C_ = (100 - C) * 0.01 * H;
+          C_ = C * 0.01 * H;
 
     I2 = CLAMP_COLOR((2 * B_ + C_)/2);
     I1 = CLAMP_COLOR((2 * B_ - C_)/2);
