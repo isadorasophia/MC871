@@ -302,8 +302,9 @@ GrayImage *ReadGrayImage(char *filename)
 {
   FILE *fp=NULL;
   char type[10];
-  uchar *data=NULL;
-  int  x,y,nx,ny,Imax; 
+  uchar *data8=NULL;
+  ushort *data16=NULL;
+  int  x,y,nx,ny,Imax,hi,lo,p; 
   GrayImage *I=NULL;
   char remarks[256];
 
@@ -326,12 +327,36 @@ GrayImage *ReadGrayImage(char *filename)
 	    fscanf(fp,"%d",&I->val[y][x]);
       }else{
 	if (strcmp(type,"P5")==0){
-	  data = AllocUCharArray(nx*ny);
-	  fread(data,sizeof(uchar),nx*ny,fp);
-	  for (y=0; y < ny; y++)
-	    for (x=0; x < nx; x++)
-	      I->val[y][x] = data[x+y*nx];
-	  free(data);
+	  if ((Imax <= 255) && (Imax > 0)) {
+            data8 = AllocUCharArray(nx*ny);
+
+	    if (fread(data8, sizeof(uchar), nx*ny, fp) != nx*ny)
+               Error("Reading error", "iftReadImageP5");
+
+    	    for (y=0; y < ny; y++)
+	      for (x=0; x < nx; x++)
+	        I->val[y][x] = data8[x+y*nx];
+
+              free(data8);
+
+          } else if ((Imax <= 65535) && (Imax > 255)) {
+	     data16 = AllocUShortArray(nx*ny);
+
+             for (p = 0; p < nx*ny; p++) {
+                if ((hi = fgetc(fp)) == EOF)
+                    Error("Reading error", "iftReadImageP5");
+                if ((lo = fgetc(fp)) == EOF)
+                    Error("Reading error", "iftReadImageP5");
+
+                data16[p] = (hi << 8) + lo;
+             }
+
+             for (y=0; y < ny; y++)
+	       for (x=0; x < nx; x++)
+                 I->val[y][x] = (int) data16[x+y*nx];
+
+             free(data16);
+	  }
 	}
       }
     }else{
@@ -349,7 +374,8 @@ void WriteGrayImage(GrayImage *I, char *filename)
 {
   FILE *fp=NULL;
   uchar *data=NULL;
-  int  x,y,Imax,Imin; 
+  ushort *data16=NULL;
+  int  x,y,p,Imax,Imin,hi,lo; 
 
   Imax = INT_MIN; Imin = INT_MAX;
   for (y=0; y < I->ny; y++)
@@ -375,7 +401,28 @@ void WriteGrayImage(GrayImage *I, char *filename)
 
       fwrite(data,sizeof(uchar),I->nx*I->ny,fp);
       free(data);
-    }else{
+    }else if (((Imax-Imin) >= 256)&&((Imax-Imin) < 65536)){ 
+      fprintf(fp,"P5\n");
+      fprintf(fp,"%d %d\n",I->nx,I->ny);
+      fprintf(fp,"%d\n",Imax);
+
+      data16 = AllocUShortArray(I->nx*I->ny);
+      for (y=0; y < I->ny; y++)
+	for (x=0; x < I->nx; x++)
+          data16[x+y*I->nx] = (ushort) I->val[y][x]-Imin;
+      {
+          #define HI(num) (((num) & 0x0000FF00) >> 8)
+          #define LO(num) ((num) & 0x000000FF)
+          for (p = 0; p < I->nx*I->ny; p++) {
+              hi = HI(data16[p]);
+              lo = LO(data16[p]);
+              fputc(hi, fp);
+              fputc(lo, fp);
+          }
+      }
+
+      free(data16);
+    } else {
       fprintf(fp,"P2\n");
       fprintf(fp,"%d %d\n",I->nx,I->ny);
       fprintf(fp,"%d\n",Imax-Imin);
@@ -392,6 +439,26 @@ void WriteGrayImage(GrayImage *I, char *filename)
   }else{
     Error(MSG2,"WriteGrayImage");
   }
+}
+
+int MaximumColorValue(ColorImage *img){
+
+    int img_max_val[3];
+    for (int i=0; i<3; i++){
+       img_max_val[i] = MaximumIntensityColor(img,i);
+    }
+
+    return MAX(MAX(img_max_val[RED],img_max_val[GREEN]),img_max_val[BLUE]);
+}
+
+int MinimumColorValue(ColorImage *img){
+
+    int img_min_val[3];
+    for (int i=0; i<3; i++){
+       img_min_val[i] = MinimumIntensityColor(img,i);
+    }
+
+    return MIN(MIN(img_min_val[RED],img_min_val[GREEN]),img_min_val[BLUE]);
 }
 
 ColorImage *RGB2YCgCo(ColorImage *img){
@@ -469,26 +536,6 @@ int MaximumIntensityColor(ColorImage *img, int c){
         max = img->cor[j][i].val[c];
 
   return max;
-}
-
-int MaximumColorValue(ColorImage *img){
-
-    int img_max_val[3];
-    for (int i=0; i<3; i++){
-       img_max_val[i] = MaximumIntensityColor(img,i);
-    }
-
-    return MAX(MAX(img_max_val[RED],img_max_val[GREEN]),img_max_val[BLUE]);
-}
-
-int MinimumColorValue(ColorImage *img){
-
-    int img_min_val[3];
-    for (int i=0; i<3; i++){
-       img_min_val[i] = MinimumIntensityColor(img,i);
-    }
-
-    return MIN(MIN(img_min_val[RED],img_min_val[GREEN]),img_min_val[BLUE]);
 }
 
 ColorImage *CreateColorImage(int nx, int ny)
@@ -599,7 +646,6 @@ void WriteColorImage(ColorImage *I, char *filename)
           fputc((uchar)I->cor[y][x].val[GREEN],fp);//green
           fputc((uchar)I->cor[y][x].val[BLUE],fp);//blue
         }
-      fclose(fp);
     } else if (max_val < 65536){
       int rgbBitDepth = 9;
       // find the bit depth for the maximum value img_max_val            
@@ -800,5 +846,23 @@ void WriteMedicalImage(MedicalImage *I, char *filename)
     Error(MSG2,"WriteMedicalImage");
   }
   
+}
+
+MedicalImage *CopyMedicalImage(MedicalImage *img){
+  
+  MedicalImage *scn = CreateMedicalImage(img->nx, img->ny, img->nz);
+  int x,y,z;
+
+  scn->dx = img->dx;
+  scn->dy = img->dy;
+  scn->dz = img->dz;
+
+  for (z=0;z<img->nx;z++)
+    for (y=0;y<img->ny;y++)
+      for (x=0;x<img->nz;x++)
+        scn->val[z][y][x] = img->val[z][y][x];
+
+  return scn;
+
 }
 

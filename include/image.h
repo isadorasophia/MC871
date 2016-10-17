@@ -24,6 +24,7 @@ typedef struct _grayimage {
   int   nx,ny;    /* dimensoes da imagem */
   int   **val;    /* matriz com os valores dos pixels */ 
   float dx,dy;    /* tamanho do pixel em unidades de comprimento */
+  int   Imax;     /* image depth*/
   char  unid[10]; /* unidade de comprimento */
 } GrayImage;
 
@@ -35,6 +36,7 @@ typedef struct _colorimage {
   int   nx,ny;    /* dimensoes da imagem */
   Cor **cor;      /* matriz com a cor dos pixels */ 
   float dx,dy;    /* tamanho do pixel em unidades de comprimento */
+  int   Imax;     /* depth (2^b-1)*/
   char  unid[10]; /* unidade de comprimento */
 } ColorImage;
 
@@ -42,8 +44,12 @@ typedef struct _medicalimage {
   int    nx,ny,nz; /* dimensoes da imagem */
   int ***val;      /* volume com os valores dos voxels */ 
   float  dx,dy,dz; /* tamanho do voxel em unidades de comprimento */
+  int    Imax;     /* depth (2^b-1)*/
   char   unid[10]; /* unidade de comprimento */
 } MedicalImage;
+
+
+void         *ReadImageByExt(char *filename);
 
 Image        *CreateImage(int ncols,int nrows);
 void          DestroyImage(Image **img);
@@ -51,9 +57,7 @@ Image        *ReadImage(char *filename);
 void          WriteImage(Image *img, char *filename);
 Image        *MakeImage(char *data);
 Image        *AddZeros(Image *img, int ncols, int nrows);
-Image        *CreateCos(int ncols, int nrows, 
-			float wx, float wy, 
-			float phix, float phiy);
+Image        *CreateCos(int ncols, int nrows, float wx, float wy, float phix, float phiy);
 Image        *Abs(Image *img);
 Image        *ImageMagnitude(Image *imgx, Image *imgy);
 
@@ -67,12 +71,11 @@ void          DestroyGrayImage(GrayImage **I);
 GrayImage    *ReadGrayImage(char *filename);
 void          WriteGrayImage(GrayImage *I, char *filename); 
 
+
 ColorImage    *RGB2YCgCo(ColorImage *img);
 ColorImage    *YCgCo2RGB(ColorImage *img);
 int           MinimumIntensityColor(ColorImage *img, int c);
 int           MaximumIntensityColor(ColorImage *img, int c);
-int           MaximumColorValue(ColorImage *img);
-int           MinimumColorValue(ColorImage *img);
 ColorImage   *CreateColorImage(int nx, int ny); 
 void          DestroyColorImage(ColorImage **I);
 ColorImage   *ReadColorImage(char *filename);
@@ -81,6 +84,7 @@ void          WriteColorImage(ColorImage *I, char *filename);
 MedicalImage *CreateMedicalImage(int nx, int ny, int nz); 
 void          DestroyMedicalImage(MedicalImage **I);
 MedicalImage *ReadMedicalImage(char *filename);
+MedicalImage *CopyMedicalImage(MedicalImage *img);
 void          WriteMedicalImage(MedicalImage *I, char *filename); 
 
 #endif

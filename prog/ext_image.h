@@ -1,3 +1,5 @@
+#pragma once
+
 #include "mc920.h"
 
 /* Coordenates */
@@ -20,43 +22,6 @@ typedef enum { AXIAL = 1, CORONAL, SAGITAL } Cut;
 #define ERROR -1
 #define NONE  -1
 #define OK     0
-
-/* Make a medical cut (AXIAL, CORONAL or SAGITAL) according to cord */
-int to2d_cut(MedicalImage* model, GrayImage** img, Cut type, int cord) {
-    /* Get cut type */
-    if (type == AXIAL) {
-        cord = (cord == NONE) ? model->nz/2 : cord;
-
-        if (cord > model->nz) {
-            return ERROR;
-        }
-
-        to2d(model, img, XY, IN, (*img)->nx, (*img)->ny, cord);
-
-    } else if (type == CORONAL) {
-        cord = (cord == NONE) ? model->ny/2 : cord;
-
-        if (cord > model->ny) {
-            return ERROR;
-        }
-
-        to2d(model, img, XZ, IN, (*img)->nx, (*img)->ny, cord);
-
-    } else if (type == SAGITAL) {
-        cord = (cord == NONE) ? model->nx/2 : cord;
-
-        if (cord > model->nx) {
-            return ERROR;
-        }
-
-        to2d(model, img, ZY, OUT, (*img)->nx, (*img)->ny, cord);
-
-    } else {
-        return ERROR;
-    }
-
-    return OK;
-}
 
 /* Torna uma imagem 3D em 2D, dado:
  *   a: eixos do plano (XY, XZ ou ZY)
@@ -123,6 +88,43 @@ int to2d(MedicalImage* model, GrayImage** img, Axis a, Orientation o,
                 }
             }
         }
+    }
+
+    return OK;
+}
+
+/* Make a medical cut (AXIAL, CORONAL or SAGITAL) according to cord */
+int to2d_cut(MedicalImage* model, GrayImage** img, Cut type, int cord) {
+    /* Get cut type */
+    if (type == AXIAL) {
+        cord = (cord == NONE) ? model->nz/2 : cord;
+
+        if (cord > model->nz) {
+            return ERROR;
+        }
+
+        to2d(model, img, XY, IN, (*img)->nx, (*img)->ny, cord);
+
+    } else if (type == CORONAL) {
+        cord = (cord == NONE) ? model->ny/2 : cord;
+
+        if (cord > model->ny) {
+            return ERROR;
+        }
+
+        to2d(model, img, XZ, IN, (*img)->nx, (*img)->ny, cord);
+
+    } else if (type == SAGITAL) {
+        cord = (cord == NONE) ? model->nx/2 : cord;
+
+        if (cord > model->nx) {
+            return ERROR;
+        }
+
+        to2d(model, img, ZY, OUT, (*img)->nx, (*img)->ny, cord);
+
+    } else {
+        return ERROR;
     }
 
     return OK;
