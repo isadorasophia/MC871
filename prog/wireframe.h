@@ -86,25 +86,55 @@ int sign(float p) {
 }
 
 /* Perform T(p) */
-void translate(Point* t, Point ref) {
+void translate(Point* t, Point ref, bool inverse) {
+    float x = inverse ? -ref.x : ref.x, 
+          y = inverse ? -ref.y : ref.y,
+          z = inverse ? -ref.z : ref.z;
+
     /* Apply translation */
-    t->x = t->x + ref.x;
-    t->y = t->y + ref.y;
-    t->z = t->z + ref.z;
+    t->x = t->x + x;
+    t->y = t->y + y;
+    t->z = t->z + z;
+}
+
+void rotatex(Point* t, float cos, float sin) {
+    float x = t->x, 
+          y = t->y, 
+          z = t->z;
+
+    t->x = x;
+    t->y = cos * y - sin * z;
+    t->z = sin * y + cos * z;
+}
+
+void rotatey(Point* t, float cos, float sin) {
+    float x = t->x, 
+          y = t->y, 
+          z = t->z;
+
+    t->x = cos * x + sin * z;
+    t->y = y;
+    t->z = -sin * x + cos * z;
+}
+
+void rotatez(Point* t, float cos, float sin) {
+    float x = t->x, 
+          y = t->y, 
+          z = t->z;
+
+    t->x = cos * x - sin * y;
+    t->y = sin * x + cos * y;
+    t->z = z;
 }
 
 /* Perform Ry(thetay) * Rx(thetax) */
-void rotatexy(Point* t, float thetax_cos, float thetax_sin, 
+void rotateyx(Point* t, float thetax_cos, float thetax_sin, 
                         float thetay_cos, float thetay_sin) {
     /* Rotate in Ry(theta) */
-    t->x = thetay_cos * t->x + thetay_sin * t->z;
-    t->y = t->y;
-    t->z = -thetay_sin * t->x + thetay_cos * t->z;
+    rotatey(t, thetay_cos, thetay_sin);
 
     /* Rotate in Rx(theta) */
-    t->x = t->x;
-    t->y = thetax_cos * t->y - thetax_sin * t->z;
-    t->z = thetax_sin * t->y - thetax_cos * t->z;
+    rotatex(t, thetax_cos, thetax_sin);
 }
 
 /* Find angle between x and y axis based on a vector */
@@ -126,15 +156,9 @@ void find_ang(Vector view, float* thetax_cos, float* thetax_sin,
  * */
 void transform(Point* s, Point pc, Point qc, float thetax_cos, 
                float thetax_sin, float thetay_cos, float thetay_sin) {
-    printf("%f %f %f\n", s->x, s->y, s->z);
-    printf("x cos, sen: %f %f\ny cos, sen: %f %f\n", thetax_cos, thetax_sin, 
-           thetay_cos, thetay_sin);
-
-    translate(s, pc);
-    rotatexy(s, thetax_cos, thetax_sin, thetay_cos, thetay_sin);
-    translate(s, qc);
-
-    printf("%f %f %f\n", s->x, s->y, s->z);
+    translate(s, pc, false);
+    rotateyx(s, thetax_cos, thetax_sin, thetay_cos, thetay_sin);
+    translate(s, qc, false);
 }
 
 /* Rotate a model given a view (typically, it would be user's mouse) */
@@ -245,7 +269,7 @@ ColorImage* draw_wireframe(MedicalImage model, Vector view) {
     for (i = 0; i < N_FACES; i++) {
         rot_face[i] = face[i];
 
-        rotatexy(&rot_face[i], thetax_cos, thetax_sin, thetay_cos, thetay_sin);
+        rotateyx(&rot_face[i], thetax_cos, thetax_sin, thetay_cos, thetay_sin);
     }
 
     /* Apply transformation to each of the vertexes */

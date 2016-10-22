@@ -6,11 +6,11 @@ import os
 
 import subprocess
 
-exe         = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/BC"
-model_name  = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/brain.scn"
-labels_name = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/brain_labels.scn"
+exe           = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/BC"
+model_name    = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/brain.scn"
+labels_name   = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/brain_labels.scn"
 
-output    = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/brain.ppm"
+output   = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/brain.ppm"
 
 def change():
     try:
@@ -26,6 +26,7 @@ def change():
 
 root = Tk()
 root.geometry('{}x{}'.format(300, 500))
+root.title("2D Plane Simulator")
 
 # set image
 img = ImageTk.PhotoImage(Image.open(output))
@@ -68,9 +69,9 @@ w2 = Scale(root, from_=0, to=100, orient=HORIZONTAL)
 w2.set(30)
 w2.grid(row = 3, column = 1, columnspan = 2, padx = 10, sticky = W+E+N+S)
 
-# set main button
 panel.grid(row = 4, columnspan = 3, sticky = W+E+N+S)
 
+# set main button
 button = Button(root, text='Apply!', command = change)
 button.grid(row = 5, column = 1, pady = 12)
 
