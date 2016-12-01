@@ -5,7 +5,7 @@ FLAGS= -O3 -Wall -Wno-unused-result -std=gnu99 -pedantic
 MC920LIB    = -L../lib -lmc920 -lm 
 MC920FLAGS  = -I../include 
 
-PROG_SRC	= $(basename $(shell find ./ -maxdepth 1 -name '*.c'))
+PROG_SRC    = $(basename $(shell find ./ -maxdepth 1 -name '*.c'))
 
 all:
 	make libift
