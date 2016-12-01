@@ -141,7 +141,7 @@ int BC(GrayImage* img, int B, int C) {
         k1 = 0,
         I1, I2;
 
-    float B_ = (100 - B) * 0.01 * H,
+    double B_ = (100 - B) * 0.01 * H,
           C_ = C * 0.01 * H;
 
     I2 = CLAMP_COLOR((2 * B_ + C_)/2);
@@ -196,7 +196,7 @@ void scale_colorspace(GrayImage* img, int old_max, int new_max) {
     /* Apply scale! */
     for (i = 0; i < img->ny; i++) {
         for (j = 0; j < img->nx; j++) {
-            img->val[i][j] = (float)img->val[i][j]/old_max * new_max;
+            img->val[i][j] = (double)img->val[i][j]/old_max * new_max;
         }
     }
 }
@@ -206,8 +206,8 @@ void scale_colorspace(GrayImage* img, int old_max, int new_max) {
 int color(GrayImage* img, ColorImage* c_img) {
     int i, j;
 
-    float V;
-    float R_, G_, B_;
+    double V;
+    double R_, G_, B_;
 
     for (i = 0; i < img->ny; i++) {
         for (j = 0; j < img->nx; j++) {
@@ -235,10 +235,10 @@ int color(GrayImage* img, ColorImage* c_img) {
 }
 
 /* Convert from a rgb space to YCgCo */
-void rgb2ycc(Cor cor, float* Y_, float* Cg, float* Co) {
-    float R_ = (float)cor.val[R]/H,
-          G_ = (float)cor.val[G]/H,
-          B_ = (float)cor.val[B]/H; 
+void rgb2ycc(Cor cor, double* Y_, double* Cg, double* Co) {
+    double R_ = (double)cor.val[R]/H,
+          G_ = (double)cor.val[G]/H,
+          B_ = (double)cor.val[B]/H; 
 
     *Y_ =  0.25 * R_ + 0.5 * G_ + 0.25 * B_;
     *Cg = -0.25 * R_ + 0.5 * G_ - 0.25 * B_;
@@ -246,8 +246,8 @@ void rgb2ycc(Cor cor, float* Y_, float* Cg, float* Co) {
 }
 
 /* Convert from a YCgCo space to a rgb space */
-void ycc2rgb(float Y_, float Cg, float Co, Cor* cor) {
-    float R_ = Y_ - Cg + Co,
+void ycc2rgb(double Y_, double Cg, double Co, Cor* cor) {
+    double R_ = Y_ - Cg + Co,
           G_ = Y_ + Cg,
           B_ = Y_ - Cg - Co;
 
@@ -261,13 +261,13 @@ void apply_mask(GrayImage* img, ColorImage* c_img) {
     int x = img->nx;
 
     int i, j;
-    float Cg, Co, Y_;
+    double Cg, Co, Y_;
 
     for (i = 0; i < y; i++) {
         for (j = 0; j < x; j++) {
             rgb2ycc(c_img->cor[i][j], &Y_, &Cg, &Co);
 
-            float lum = (float)img->val[i][j]/H;
+            double lum = (double)img->val[i][j]/H;
 
             Y_  = lum;
 

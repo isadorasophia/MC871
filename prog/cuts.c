@@ -5,7 +5,7 @@ void usage () {
 ./to2d <input.scn> <output.ppm> <Vx> <Vy> <Vz> <Px> <Py> <Pz>\n \
     - Vetor: Direcao do corte planar, {Vx, Vy, Vz};\n \
     - Point: Ponto de referencia para realizar o corte, {Px, Py, Pz}.\n", 
-    "projection.c");
+    "cuts.c");
 }
 
 int main (int argc, char *argv[]) {
@@ -29,8 +29,8 @@ int main (int argc, char *argv[]) {
     p.y    = atof(argv[7]);
     p.z    = atof(argv[8]);
 
-    output = mip(*model, view);
-    // output = planar_cut(*model, view, p);
+    output = planar_cut(*model, p, view);
+    scale_colorspace(output, NONE, H); 
 
     /* Write output */
     WriteGrayImage(output, argv[2]);

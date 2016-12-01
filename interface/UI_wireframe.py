@@ -7,10 +7,10 @@ import os
 import subprocess
 
 exe         = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/projection"
-model_name  = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/brain.scn"
-labels_name = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/brain_labels.scn"
+model_name  = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/input/brain.scn"
+labels_name = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/input/brain_labels.scn"
 
-output   = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/wire.ppm"
+output   = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/output/wire.ppm"
 
 def change():
     try:

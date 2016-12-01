@@ -44,38 +44,40 @@ Point vert[N_VERT] = {{ 0,  0,  0},
                       { 1,  1,  1},
                       { 1,  0,  1}};
 
+#define THRESH .0000001
+
 /* Return the dot product between two vectors */
-float dot_product(Vector x, Vector y) {
+double dot_product(Vector x, Vector y) {
     return x.x * y.x + x.y * y.y + x.z * y.z;
 }
 
 /* Find diagonal of a vector */
-float diagonal(Point size) {
+double diagonal(Point size) {
     return sqrt(dot_product(size, size));
 }
 
 /* Return cos of the angle between both vectors (NORMALIZED)! */
-float find_cos(Vector x, Vector y) {
+double find_cos(Vector x, Vector y) {
     return dot_product(x, y);
 }
 
 /* Return sin of an agle given its cos */
-float find_sin(float cos) {
+double find_sin(double cos) {
     return sqrt(1 - cos*cos);
 }
 
 /* Normalize a vector */
 void normalize(Vector* x) {
-    float n = diagonal(*x);
+    double n = diagonal(*x);
 
     /* Apply normalization given its size */
-    x->x = x->x/n;
-    x->y = x->y/n;
-    x->z = x->z/n;
+    x->x = x->x/(n + THRESH);
+    x->y = x->y/(n + THRESH);
+    x->z = x->z/(n + THRESH);
 }
 
 /* Returns signal of number */
-int sign(float p) {
+int sign(double p) {
     if (p > 0) {
         return 1;
     } else if (p == 0) {
@@ -87,7 +89,7 @@ int sign(float p) {
 
 /* Perform T(p) */
 void translate(Point* t, Point ref, bool inverse) {
-    float x = inverse ? -ref.x : ref.x, 
+    double x = inverse ? -ref.x : ref.x, 
           y = inverse ? -ref.y : ref.y,
           z = inverse ? -ref.z : ref.z;
 
@@ -97,8 +99,8 @@ void translate(Point* t, Point ref, bool inverse) {
     t->z = t->z + z;
 }
 
-void rotatex(Point* t, float cos, float sin) {
-    float x = t->x, 
+void rotatex(Point* t, double cos, double sin) {
+    double x = t->x, 
           y = t->y, 
           z = t->z;
 
@@ -107,8 +109,8 @@ void rotatex(Point* t, float cos, float sin) {
     t->z = sin * y + cos * z;
 }
 
-void rotatey(Point* t, float cos, float sin) {
-    float x = t->x, 
+void rotatey(Point* t, double cos, double sin) {
+    double x = t->x, 
           y = t->y, 
           z = t->z;
 
@@ -117,8 +119,8 @@ void rotatey(Point* t, float cos, float sin) {
     t->z = -sin * x + cos * z;
 }
 
-void rotatez(Point* t, float cos, float sin) {
-    float x = t->x, 
+void rotatez(Point* t, double cos, double sin) {
+    double x = t->x, 
           y = t->y, 
           z = t->z;
 
@@ -128,18 +130,18 @@ void rotatez(Point* t, float cos, float sin) {
 }
 
 /* Perform Ry(thetay) * Rx(thetax) */
-void rotateyx(Point* t, float thetax_cos, float thetax_sin, 
-                        float thetay_cos, float thetay_sin) {
-    /* Rotate in Ry(theta) */
-    rotatey(t, thetay_cos, thetay_sin);
-
+void rotatexy(Point* t, double thetax_cos, double thetax_sin, 
+                        double thetay_cos, double thetay_sin) {
     /* Rotate in Rx(theta) */
     rotatex(t, thetax_cos, thetax_sin);
+
+    /* Rotate in Ry(theta) */
+    rotatey(t, thetay_cos, thetay_sin);
 }
 
 /* Find angle between x and y axis based on a vector */
-void find_ang(Vector view, float* thetax_cos, float* thetax_sin,
-                           float* thetay_cos, float* thetay_sin) {
+void find_ang(Vector view, double* thetax_cos, double* thetax_sin,
+                           double* thetay_cos, double* thetay_sin) {
     /* Normalize view for further operations */
     normalize(&view);
 
@@ -154,16 +156,16 @@ void find_ang(Vector view, float* thetax_cos, float* thetax_sin,
  *     pc: {-x/2, -y/2, -z/2}
  *     qc: {D/2, D/2, -D/2} 
  * */
-void transform(Point* s, Point pc, Point qc, float thetax_cos, 
-               float thetax_sin, float thetay_cos, float thetay_sin) {
+void transform(Point* s, Point pc, Point qc, double thetax_cos, 
+               double thetax_sin, double thetay_cos, double thetay_sin) {
     translate(s, pc, false);
-    rotateyx(s, thetax_cos, thetax_sin, thetay_cos, thetay_sin);
+    rotatexy(s, thetax_cos, thetax_sin, thetay_cos, thetay_sin);
     translate(s, qc, false);
 }
 
 /* Rotate a model given a view (typically, it would be user's mouse) */
 MedicalImage* rotate(MedicalImage model, Vector view) {
-    float thetax_cos, thetax_sin, thetay_cos, thetay_sin;
+    double thetax_cos, thetax_sin, thetay_cos, thetay_sin;
 
     /* Find respective angles based on view vector */
     find_ang(view, &thetax_cos, &thetax_sin, &thetay_cos, &thetay_sin);
@@ -174,10 +176,10 @@ MedicalImage* rotate(MedicalImage model, Vector view) {
         z = model.nz;
 
     Point size = {x, y, z};
-    float D = diagonal(size);
+    double D = diagonal(size);
 
     /* New reference point */
-    Point pc = {-(float)x/2, -(float)y/2, -(float)z/2};
+    Point pc = {-(double)x/2, -(double)y/2, -(double)z/2};
     Point qc = {D/2, D/2, -D/2};
 
     MedicalImage* rotated;               
@@ -204,7 +206,7 @@ MedicalImage* rotate(MedicalImage model, Vector view) {
 /* Implementation of DDA algorithm, which draws a line from p1 to pn */
 void DDA(ColorImage* img, Point p1, Point pn, Cor color) {
     int k, n;
-    float Du = 0, Dv = 0, du = 0, dv = 0;
+    double Du = 0, Dv = 0, du = 0, dv = 0;
 
     if (p1.x == pn.x && p1.y == pn.y && p1.z == pn.z) {
         n = 1;
@@ -240,7 +242,7 @@ ColorImage* draw_wireframe(MedicalImage model, Vector view) {
 
     Point size = {x, y, z};
 
-    float t, thetax_cos, thetax_sin, thetay_cos, thetay_sin;
+    double t, thetax_cos, thetax_sin, thetay_cos, thetay_sin;
 
     bool draw_face[N_FACES];
     Point rot_face[N_FACES];
@@ -255,11 +257,11 @@ ColorImage* draw_wireframe(MedicalImage model, Vector view) {
     color.val[2] = rand() % 255;
 
     /* Create output */
-    float D = diagonal(size);
+    double D = diagonal(size);
     ColorImage* output = CreateColorImage(D, D);
 
     /* Reference for rotation */
-    Point pc = {-(float)x/2, -(float)y/2, -(float)z/2};
+    Point pc = {-(double)x/2, -(double)y/2, -(double)z/2};
     Point qc = {D/2, D/2, -D/2};
 
     /* Find angle based on view vector */
@@ -269,7 +271,7 @@ ColorImage* draw_wireframe(MedicalImage model, Vector view) {
     for (i = 0; i < N_FACES; i++) {
         rot_face[i] = face[i];
 
-        rotateyx(&rot_face[i], thetax_cos, thetax_sin, thetay_cos, thetay_sin);
+        rotatexy(&rot_face[i], thetax_cos, thetax_sin, thetay_cos, thetay_sin);
     }
 
     /* Apply transformation to each of the vertexes */
