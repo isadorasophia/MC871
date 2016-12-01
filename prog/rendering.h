@@ -1,6 +1,6 @@
 #pragma once
 
-#include "visual.h"
+#include "mip.h"
 
 #define N_NEIGH 26
 #define K       5

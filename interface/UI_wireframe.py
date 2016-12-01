@@ -6,7 +6,7 @@ import os
 
 import subprocess
 
-exe         = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/projection"
+exe         = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/wireframe"
 model_name  = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/input/brain.scn"
 labels_name = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/input/brain_labels.scn"
 

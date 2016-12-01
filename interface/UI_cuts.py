@@ -6,7 +6,7 @@ import os
 
 import subprocess
 
-exe = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/cuts"
+exe = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/prog/planar_cut"
 model_name = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/input/brain.scn"
 
 output = "/home/bonnibel/graduation/6thsemester/mo815/libmc920/data/output/cuts.ppm"

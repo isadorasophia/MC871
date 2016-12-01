@@ -5,7 +5,7 @@
  *   - Supports wireframe view from a 3D image 
  * */
 
-#include "ext_image.h"
+#include "basic.h"
 
 /* Set properties according to a cubic form */
 #define N_FACES 6

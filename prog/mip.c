@@ -1,4 +1,4 @@
-#include "visual.h"
+#include "mip.h"
 
 void usage () {
     Error(" Forma de uso incorreta. \n \

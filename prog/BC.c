@@ -1,4 +1,4 @@
-#include "ext_image.h"
+#include "basic.h"
 
 void usage () {
     Error("Forma de uso incorreta. \n \
@@ -18,10 +18,12 @@ int main (int argc, char *argv[]) {
     /* Flag to use label or not */
     int use_label = 1;
 
-    int x, y, cord;
+    int x = 0, 
+        y = 0, 
+        cord = 0;
     int B, C;
 
-    Cut cut;
+    Cut cut = AXIAL;
 
     /* Make sure arguments are fine */
     if (argc != 8) {

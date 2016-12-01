@@ -1,4 +1,4 @@
-#include "ext_image.h"
+#include "basic.h"
 
 /* Aplicacao que testa a funcionalidade da biblioteca to2d.h,
  * responsavel por converter imagens 3D em 2D */
@@ -15,10 +15,10 @@ void usage () {
 int main (int argc, char *argv[]) {
     MedicalImage* original;
     GrayImage*    output;
-    Axis          a;
-    Orientation   o;
+    Axis          a = XY;
+    Orientation   o = IN;
 
-    int           x, y, origin;
+    int           x = 0, y = 0, origin;
 
     /* Make sure arguments are fine */
     if (argc != 6) {
